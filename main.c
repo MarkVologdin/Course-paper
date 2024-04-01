@@ -124,18 +124,18 @@ double* search_angle_orientation_model_1(double * fs1, double *fs2, double * fs3
     mediums_fs2 = search_mediums_sensors_mean(fs2, len);
     mediums_fs3 = search_mediums_sensors_mean(fs3, len);
 
-    mediums_seans[0] = mediums_fs1;
-    mediums_seans[1] = mediums_fs2;
-    mediums_seans[2] = mediums_fs3;
+    // mediums_seans[0] = mediums_fs1;
+    // mediums_seans[1] = mediums_fs2;
+    // mediums_seans[2] = mediums_fs3;
 
-    double f1_norm,f2_norm, f3_norm;
+    // double f1_norm,f2_norm, f3_norm;
 
-    f1_norm = mediums_fs1/norma_vectora(mediums_seans);
-    f2_norm = mediums_fs2/norma_vectora(mediums_seans);
-    f3_norm = mediums_fs3/norma_vectora(mediums_seans);
+    // f1_norm = mediums_fs1/norma_vectora(mediums_seans);
+    // f2_norm = mediums_fs2/norma_vectora(mediums_seans);
+    // f3_norm = mediums_fs3/norma_vectora(mediums_seans);
 
-    theta = atan2(f1_norm,(sqrt(pow(f2_norm,2)+pow(f3_norm,2))));// in radians
-    gamma = -(atan2(f3_norm,f2_norm)); // in radians
+    theta = atan2(mediums_fs1,(sqrt(pow(mediums_fs2,2)+pow(mediums_fs3,2))));// in radians
+    gamma = -(atan2(mediums_fs3,mediums_fs2)); // in radians
     angles[0] = 0;
     angles[1] = gamma;
     angles[2] = theta; 
@@ -223,8 +223,8 @@ double * search_angle_psi_2(double *f_medium, double * angles, double *omega_s1,
 int main() {
     char filename[] = "INS_Odo_Data.txt";
     FILE *file = fopen(filename, "r");
-    FILE *Ffile1 = fopen("outpu_angels_1.txt", "w+");
-    FILE *Ffile2 = fopen("outpu_angels_2.txt", "w+");
+    FILE *Ffile1 = fopen("output_angels_1.txt", "w+");
+    FILE *Ffile2 = fopen("output_angels_2.txt", "w+");
     FILE *file_math_wait = fopen("output_math_wait", "w+");
     FILE *file_math_dispersia = fopen("output_math_dispersia", "w+");
 
