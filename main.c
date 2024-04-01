@@ -358,10 +358,10 @@ int main() {
 
     columns_l3 = (double*)malloc(3*sizeof(double));
 
-    fprintf(Ffile1, "№ Time Psi Gamma Theta\n");
-    fprintf(Ffile2, "№ Time Psi Gamma Theta\n");
+    fprintf(Ffile1, "№    Time    Psi    Gamma    Theta\n");
+    fprintf(Ffile2, "№    Time    Psi    Gamma    Theta\n");
     printf("Number of steps=%I64u,number no zero odo = %I64u\n", number_of_steps, number_no_zero_odo);
-    for (size_t i = number_of_steps*100; i < number_no_zero_odo; i+=number_of_steps*10)
+    for (size_t i = number_of_steps*100; i < number_no_zero_odo; i+=1)
     {
         f_medium[0] = search_mediums_sensors_mean(data.fs1, i);
         f_medium[1] = search_mediums_sensors_mean(data.fs2, i);
@@ -371,17 +371,18 @@ int main() {
         columns_l3[1] = f_medium[1]/norma_vectora(f_medium);
         columns_l3[2] = f_medium[2]/norma_vectora(f_medium);
 
-        printf("Iteration = %I64u\n", i);
+        if(i%5000 == 0){printf("Iteration = %I64u\n", i);};
         angles1 = search_angle_orientation_model_1(data.fs1,data.fs2,data.fs3, i); // means model orientation angles
         angles1 = search_angle_psi(angles1, data.omega_s1, data.omega_s2, data.omega_s3, data.lat, i);
         angles2 = search_angle_orientation_model_2_ortoganalization(data.fs1,data.fs2,data.fs3, i); // means model orientation angles
         angles2 = search_angle_psi_2(f_medium,angles2, data.omega_s1, data.omega_s2, data.omega_s3,columns_l3, i);
-        printf("Version1 => %.6f %.6f %.6f\n", angles1[0],angles1[1],angles1[2]);
-        printf("Version2 => %.6f %.6f %.6f\n", angles2[0],angles2[1],angles2[2]);
+        if(angles1[0] < 0){continue;};
+        // printf("Version1 => %.6f %.6f %.6f\n", angles1[0],angles1[1],angles1[2]);
+        // printf("Version2 => %.6f %.6f %.6f\n", angles2[0],angles2[1],angles2[2]);
 
         //fprintf(file_math, " %I64u %.6f %.6f %.6f %.6f %.6f %.6f\n", i, math_wait(data.fs1, i/number_of_steps),math_wait(data.fs2, i), math_wait(data.fs3, i), math_wait(data.omega_s1, i), math_wait(data.omega_s2, i), math_wait(data.omega_s3, i));
-        fprintf(Ffile1, "%I64u %.6f %.6f %.6f %.6f \n", i, data.time[i], angles1[0]*180/M_PI, angles1[1]*180/M_PI, angles1[2]*180/M_PI);
-        fprintf(Ffile2, "%I64u %.6f %.6f %.6f %.6f \n", i, data.time[i], angles2[0]*180/M_PI, angles2[1]*180/M_PI, angles2[2]*180/M_PI);
+        fprintf(Ffile1, "%I64u    %.6f    %.6f    %.6f    %.6f \n", i, data.time[i], angles1[0]*180/M_PI, angles1[1]*180/M_PI, angles1[2]*180/M_PI);
+        fprintf(Ffile2, "%I64u    %.6f    %.6f    %.6f    %.6f \n", i, data.time[i], angles2[0]*180/M_PI, angles2[1]*180/M_PI, angles2[2]*180/M_PI);
     }
     fclose(Ffile1);
     fclose(Ffile2);

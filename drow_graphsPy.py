@@ -12,7 +12,8 @@ data2 = pd.read_csv(file_path2, delim_whitespace=True)
 
 ## Создание графика
 plt.figure(figsize=(10, 6))
-
+data1['Psi'] = data1['Psi'] - 90
+data2['Psi'] = data2['Psi'] - 90
 # График
 plt.plot(data1['Time'], data1['Psi'], label='Psi', linestyle='-', marker='o')
 

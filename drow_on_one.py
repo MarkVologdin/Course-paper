@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Загрузка данных из файла
-file_path = '/home/mark/Документы/Course paper/output_math_wait'  # Укажите путь к вашему файлу данных
+file_path = 'C:\\Users\\Markelo\\Documents\\Course paper\\output_math_wait'  # Укажите путь к вашему файлу данных
 data = pd.read_csv(file_path, delim_whitespace=True)
 
 # Создание графика
