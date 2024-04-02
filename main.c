@@ -69,23 +69,21 @@ struct Measurement {
 };
 void free_data( struct Measurement data)
 {
-    if (data.time != NULL){free(data.time);};
-    if (data.fs1 != NULL){free(data.time);};
-    if (data.fs2 != NULL){free(data.time);};
-    if (data.fs3 != NULL){free(data.time);};
-    if (data.omega_s1 != NULL){free(data.time);};
-    if (data.omega_s2 != NULL){free(data.time);};
-    if (data.omega_s3 != NULL){free(data.time);};
-    if (data.odo != NULL){free(data.time);};
-    if (data.hei != NULL){free(data.time);};
-    if (data.lon != NULL){free(data.time);};
-    if (data.lat != NULL){free(data.time);};
-    if (data.hei != NULL){free(data.time);};
-    if (data.ve != NULL){free(data.time);};
-    if (data.vn != NULL){free(data.time);};
-    if (data.vup != NULL){free(data.time);};
-    if (data.flag_gps != NULL){free(data.time);};
-
+    if (data.time != NULL){free(data.time);}
+    if (data.fs1 != NULL){free(data.fs1);}
+    if (data.fs2 != NULL){free(data.fs2);}
+    if (data.fs3 != NULL){free(data.fs3);}
+    if (data.omega_s1 != NULL){free(data.omega_s1);}
+    if (data.omega_s2 != NULL){free(data.omega_s2);}
+    if (data.omega_s3 != NULL){free(data.omega_s3);}
+    if (data.odo != NULL){free(data.odo);}
+    if (data.hei != NULL){free(data.hei);}
+    if (data.lon != NULL){free(data.lon);}
+    if (data.lat != NULL){free(data.lat);}
+    if (data.ve != NULL){free(data.ve);}
+    if (data.vn != NULL){free(data.vn);}
+    if (data.vup != NULL){free(data.vup);}
+    if (data.flag_gps != NULL){free(data.flag_gps);}
 
 }
 
@@ -437,7 +435,7 @@ int main() {
     //     math_dispersia_omega_s3[i] = math_dispersia(data.omega_s3,math_dispersia_omega_s3,math_wait_omega_s3,i,number_no_zero_odo);
     //     fprintf(file_math_dispersia, "%I64u %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n",i,data.time[i],math_dispersia_s1[i],math_dispersia_s2[i],math_dispersia_s3[i],math_dispersia_omega_s1[i],math_dispersia_omega_s2[i],math_dispersia_omega_s3[i]);
     // }
-    // fclose(file_math_dispersia);
+    fclose(file_math_dispersia);
     
     // free(math_wait_fs1);
     // free(math_wait_fs2);
@@ -446,6 +444,16 @@ int main() {
     // free(math_wait_omega_s1);
     // free(math_wait_omega_s2);
     // free(math_wait_omega_s3);
-    
+
+    free(mean_fs1);
+    free(mean_fs2);
+    free(mean_fs3);
+
+    free(mean_omega_s1);
+    free(mean_omega_s2);
+    free(mean_omega_s3);
+
+    free(lat_mean);
+    free_data(data);
     return 0;
 }
