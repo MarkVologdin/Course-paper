@@ -10,6 +10,12 @@
 // разобратться с мерами и перевести все из градусов/час 
 #define RadianToDegree  (180./M_PI)
 
+#ifdef _WIN32
+    #define my_format_size_t %I64u
+#elif
+    #define my_format_size_t %zu
+#endif
+
 #define D2R(Degrees)    ((Degrees)/RadianToDegree)          // Degree  --> Radians
 #define M2R(Minutes)    ((Minutes/60.)/RadianToDegree)      // Minutes --> Radians
 #define S2R(Seconds)    ((Seconds/3600.)/RadianToDegree)    // Seconds --> Radians
@@ -69,6 +75,7 @@ size_t count_lines_in_file(FILE *file) {
 
 struct Measurement {
     double* time;     // Time[s]
+     double* time1; 
     double* fs1;      // Fs1[m/s/s]
     double* fs2;      // Fs2[m/s/s]
     double* fs3;      // Fs3[m/s/s]
@@ -184,23 +191,24 @@ double * search_angle_psi(double * angles, double *omega_s1_mean,double *omega_s
 {
     double lat_mean_rad;
     double* columns_l2; double* columns_l3; double* columns_l1;
-
+    FILE *file = fopen("file_cals_psi.txt", "a");
     columns_l3 = (double*)malloc(3*sizeof(double));
     columns_l2 = (double*)malloc(3*sizeof(double));
 
+    //printf("gamma[r] = %.6f, theta[r] = %.6f, gamma[d]=%.6f,theta[d] = %.6f ", angles[1], angles[2], R2D(angles[1]), R2D(angles[2]));
     columns_l3[0] = sin(angles[2]); // sin(radians), cos(radians)
     columns_l3[1] = cos(angles[2])*cos(angles[1]); //
-    columns_l3[2] = -cos(angles[2])*sin(angles[1]);
+    columns_l3[2] = -cos(angles[2])*sin(angles[1]); printf("col3[2] = %.6f\n", columns_l3[2]);
 
     //lat_mean = search_mediums_sensors_mean(lat, len);
-    lat_mean_rad = D2R(lat_mean[len]);
+    lat_mean_rad = D2R(lat_mean[len]); //printf(" lat_mean[d] = %.6f, lat_mean[r] = %.6f\n", lat_mean[len],lat_mean_rad);
     
     
     columns_l2[0]= (DH2RS(omega_s1_mean[len])- columns_l3[0]*UE*sin(lat_mean_rad))/(UE*cos(lat_mean_rad));
     columns_l2[1]= (DH2RS(omega_s2_mean[len])- columns_l3[1]*UE*sin(lat_mean_rad))/(UE*cos(lat_mean_rad));
     columns_l2[2]= (DH2RS(omega_s3_mean[len])- columns_l3[2]*UE*sin(lat_mean_rad))/(UE*cos(lat_mean_rad));
 
-    // printf("omega1=%.10f, columns*UE*sin=%.10f,columns=%.10f\n",DH2RS(omega_s1_mean[len]),columns_l3[0]*UE*sin(lat_mean_rad),columns_l3[0]);
+    //printf("omega1=%.10f, columns*UE*sin=%.10f,columns=%.10f, result = %.10f\n",DH2RS(omega_s3_mean[len]),columns_l3[2]*UE*sin(lat_mean_rad),columns_l3[2], DH2RS(omega_s3_mean[len])- columns_l3[2]*UE*sin(lat_mean_rad));
     // printf("omega1=%.10f, columns*UE*sin=%.10f,columns=%.10f\n",DH2RS(omega_s2_mean[len]),columns_l3[0]*UE*sin(lat_mean_rad),columns_l3[0]);
     // printf("omega1=%.10f, columns*UE*sin=%.10f,columns=%.10f\n",DH2RS(omega_s3_mean[len]),columns_l3[0]*UE*sin(lat_mean_rad),columns_l3[0]);
     
@@ -209,14 +217,14 @@ double * search_angle_psi(double * angles, double *omega_s1_mean,double *omega_s
     columns_l2[1] = columns_l2[1]/ norma_vectora(columns_l2);
     columns_l2[2] = columns_l2[2]/ norma_vectora(columns_l2);
 
-    columns_l3[0] = columns_l3[0]/ norma_vectora(columns_l3);
-    columns_l3[1] = columns_l3[1]/ norma_vectora(columns_l3);
-    columns_l3[2] = columns_l3[2]/ norma_vectora(columns_l3);
-    
     columns_l1 = vector_product(columns_l2, columns_l3, 3);
-
+    fprintf(file, "%I64u %.6f %.6f %.6f  %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n", len, 
+    DH2RS(omega_s1_mean[len]), DH2RS(omega_s2_mean[len]), DH2RS(omega_s3_mean[len]), columns_l3[0], columns_l3[1], columns_l3[2], columns_l2[0], columns_l2[1], columns_l2[2], lat_mean_rad, columns_l1[0], columns_l1[1], columns_l1[2]);
     angles[0] = atan2((columns_l1[0]),(columns_l1[1]));
-    //printf("Calculus psi = %.6f\n", R2D(angles[0]));
+    //printf("Columns_l1[0] = %.6f, Columns_l1[1]= %.6f\n", columns_l1[0], columns_l1[1]);
+    //printf("Calculus psi = %.6f\n", angles[0]);
+    fclose(file);
+    printf("cos = %.10f\n", (columns_l1[0]*columns_l3[0]+columns_l1[1]*columns_l3[1]+columns_l1[2]*columns_l3[2])/(norma_vectora(columns_l1)*norma_vectora(columns_l3)));
 
     return angles;
 }
@@ -252,6 +260,17 @@ int main() {
     FILE *Ffile2 = fopen("output_angels_2.txt", "w+");
     FILE *file_math_wait = fopen("output_math_wait", "w+");
     FILE *file_math_dispersia = fopen("output_math_dispersia", "w+");
+     FILE *file3 = fopen("file_cals_psi.txt", "a");
+
+    if (file3 == NULL) {
+        printf("Error opening file.\n");
+        
+    }
+    // Пример дозаписи в файл
+    fprintf(file3, "Len Om_s1[r/s] Om_s2[r/s] Om_s3[r/s] col3[0] col3[1] col3[2] col2[0] col2[1] col2[2] lat_mean[r] col1[0] col1[1] col1[2] \n");
+    fclose(file3);
+
+
 
     if (file == NULL) {
         perror("Error opening the file_INS_ODO ");
@@ -275,12 +294,12 @@ int main() {
     }
 
     size_t num_lines = count_lines_in_file(file);
-    // printf("%zu\n", num_lines);
+    // printf("%I64u\n", num_lines);
 
     // getchar();
     size_t size_of_struct = sizeof(struct Measurement);
     size_t total_size = size_of_struct* num_lines;
-    printf("Total size data = %zu\n", total_size);
+    printf("Total size data = %I64u\n", total_size);
 
     struct Measurement data; //(struct Measurement *)malloc(num_lines * sizeof(struct Measurement));
     // if (data == NULL) {
@@ -290,6 +309,7 @@ int main() {
     // }
 
     data.time = (double*)malloc(num_lines*sizeof(double));
+    data.time1 = (double*)malloc(num_lines*sizeof(double));
     data.fs1 = (double*)malloc(num_lines*sizeof(double));
     data.fs2 = (double*)malloc(num_lines*sizeof(double));
     data.fs3 = (double*)malloc(num_lines*sizeof(double));
@@ -307,8 +327,7 @@ int main() {
 
 
     char line[4096];
-    char *token;
-    int row = 0;
+    size_t row = 0;
 
     // Skip the first line with column names
     if (fgets(line, sizeof(line), file) == NULL) {
@@ -318,54 +337,28 @@ int main() {
         return 1;
     }
   // Read and store the data
-    while (fgets(line, sizeof(line), file) != NULL) {
-        token = strtok(line, " \t"); // Assuming space or tab as the delimiter
-
-        if (token == NULL) {
-            continue; // Skip empty lines
-        }
-
-        data.time[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.fs3[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.fs1[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.fs2[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.omega_s3[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.omega_s1[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.omega_s2[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.odo[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.lon[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.lat[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.hei[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.ve[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.vn[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.vup[row] = atof(token);
-        token = strtok(NULL, " \t");
-        data.flag_gps[row] = atoi(token);
-
+    while (fgets(line, sizeof(line), file) != NULL && row < num_lines) {
+        sscanf(line, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %d",
+               &data.time[row], &data.fs3[row], &data.fs1[row], &data.fs2[row],
+               &data.omega_s3[row], &data.omega_s1[row], &data.omega_s2[row], &data.odo[row], &data.time1[row],
+               &data.lon[row], &data.lat[row], &data.hei[row], &data.ve[row], &data.vn[row],
+               &data.vup[row], &data.flag_gps[row]);
+        // if(row<10){
+        // printf("Time1: %lf, Time: %lf, Fs1: %lf, Fs2: %lf, Fs3: %lf, Omega_s1: %lf, Omega_s2: %lf, Omega_s3: %lf, Odo: %lf, Lon: %lf, Lat: %lf, Hei: %lf, Ve: %lf, Vn: %lf, Vup: %lf, FlagGPS: %d\n",
+        //    data.time1[row], data.time[row], data.fs1[row], data.fs2[row], data.fs3[row], data.omega_s1[row],
+        //    data.omega_s2[row], data.omega_s3[row], data.odo[row], data.lon[row], data.lat[row], data.hei[row],
+        //    data.ve[row], data.vn[row], data.vup[row], data.flag_gps[row]);};
         row++;
     }
     for (size_t i = 0; i < 10; i++)
     {
-        printf("N = %zu , Fs1 = %.6f, Fs2 = %.6f, Fs3 = %.6f \n", i, data.fs1[i], data.fs2[i], data.fs3[i]);
+        printf("N = %I64u , data_odo = %.6f\n", i, data.odo[i]);
     }
     
 
     fclose(file);
     size_t number_no_zero_odo = search_first_no_zero_elements(data.odo, num_lines);
-    printf("First no zero element = %zu\n", number_no_zero_odo);
+    printf("First no zero element = %I64u\n", number_no_zero_odo);
     printf("%.6f ", data.time[number_no_zero_odo-2]);
     printf("%.6f\n", data.odo[number_no_zero_odo-2]);
     printf("%.6f ", data.time[number_no_zero_odo]);
@@ -387,10 +380,10 @@ int main() {
     mean_omega_s3 = search_mediums_sensors_mean_all(data.omega_s3, number_no_zero_odo);
     lat_mean = search_mediums_sensors_mean_all(data.lat, number_no_zero_odo);
 
-    fprintf(Ffile3,"Time Fs1_mean Fs2_mean Fs3_mean Omega_s1 Omega_s2 Omega_s3");
+    fprintf(Ffile3,"Time Fs1_mean Fs2_mean Fs3_mean Omega_s1 Omega_s2 Omega_s3\n");
     for (size_t i = 0; i < number_no_zero_odo; i++)
     {
-        fprintf(Ffile3,"%.6f %.6f %.6f %.6f %.6f %.6f %.6f", data.time[i], mean_fs1[i],  mean_fs2[i],  mean_fs3[i], mean_omega_s1[i], mean_omega_s2[i], mean_omega_s3[i]);
+        fprintf(Ffile3,"%.6f %.6f %.6f %.6f %.6f %.6f %.6f\n", data.time[i], mean_fs1[i],  mean_fs2[i],  mean_fs3[i], mean_omega_s1[i], mean_omega_s2[i], mean_omega_s3[i]);
     }
     
 
@@ -403,32 +396,32 @@ int main() {
 
     fprintf(Ffile1, "№    Time    Psi    Gamma    Theta\n");
     fprintf(Ffile2, "№    Time    Psi    Gamma    Theta\n");
-    printf("Number of steps=%zu,number no zero odo = %zu\n", number_of_steps, number_no_zero_odo);
+    printf("Number of steps=%I64u,number no zero odo = %I64u\n", number_of_steps, number_no_zero_odo);
     for (size_t i = 1; i < number_no_zero_odo; i+=1)
     {
         f_medium[0] = mean_fs1[i];
         f_medium[1] = mean_fs2[i];
         f_medium[2] = mean_fs3[i];
 
-        if(i%5000 == 0){printf("Iteration = %zu\n", i);};
+        if(i%5000 == 0){printf("Iteration = %I64u\n", i);};
         angles1 = search_angle_orientation_model_1(mean_fs1,mean_fs2,mean_fs3, i); // means model orientation angles
         angles1 = search_angle_psi(angles1,mean_omega_s1, mean_omega_s2, mean_omega_s3,lat_mean, i);
         angles2 = search_angle_orientation_model_2_ortoganalization(mean_fs1,mean_fs2,mean_fs3, i); // means model orientation angles
         angles2 = search_angle_psi_2(f_medium,angles2, mean_omega_s1, mean_omega_s2,  mean_omega_s3, i);
-        fprintf(Ffile1, "%zu    %.6f    %.6f    %.6f    %.6f \n", i, data.time[i], angles1[0]*180/M_PI, angles1[1]*180/M_PI, angles1[2]*180/M_PI);
-        fprintf(Ffile2, "%zu    %.6f    %.6f    %.6f    %.6f \n", i, data.time[i], angles2[0]*180/M_PI, angles2[1]*180/M_PI, angles2[2]*180/M_PI);
+        fprintf(Ffile1, "%I64u    %.6f    %.6f    %.6f    %.6f \n", i, data.time[i], angles1[0]*180/M_PI, angles1[1]*180/M_PI, angles1[2]*180/M_PI);
+        fprintf(Ffile2, "%I64u    %.6f    %.6f    %.6f    %.6f \n", i, data.time[i], angles2[0]*180/M_PI, angles2[1]*180/M_PI, angles2[2]*180/M_PI);
     }
     fclose(Ffile1);
     fclose(Ffile2);
     // for (size_t i = 0; i < 3; i++)
     // {
-    //     printf("Orientation angles[%zu] = %f \n",i,angles[i]*180/M_PI);
+    //     printf("Orientation angles[%I64u] = %f \n",i,angles[i]*180/M_PI);
     // }
     
     // for (size_t i = 0; i < 3; i++)
     // {
-    //     printf("Orientation version1 angles[%zu] = %f \n",i,angles1[i]*180/M_PI);
-    //     printf("Orientation version2 angles[%zu] = %f \n",i,angles2[i]*180/M_PI);
+    //     printf("Orientation version1 angles[%I64u] = %f \n",i,angles1[i]*180/M_PI);
+    //     printf("Orientation version2 angles[%I64u] = %f \n",i,angles2[i]*180/M_PI);
     // }
     // free_data(data);
     
@@ -442,14 +435,14 @@ int main() {
 
     // for (size_t i = 0; i < number_no_zero_odo; i++)
     // {
-    //     //printf("Iteration(math_wait) = %zu\n",i);
+    //     //printf("Iteration(math_wait) = %I64u\n",i);
     //     math_wait_fs1[i] = math_wait(data.fs1,math_wait_fs1,i);
     //     math_wait_fs2[i] = math_wait(data.fs2,math_wait_fs2,i);
     //     math_wait_fs3[i] = math_wait(data.fs3,math_wait_fs3,i);
     //     math_wait_omega_s1[i] = math_wait(data.omega_s1,math_wait_omega_s1,i);
     //     math_wait_omega_s2[i] = math_wait(data.omega_s2,math_wait_omega_s2,i);
     //     math_wait_omega_s3[i] = math_wait(data.omega_s3,math_wait_omega_s3,i);
-    //     fprintf(file_math_wait, " %zu %.6f %.6f %.6f %.6f %.6f %.6f\n", i, math_wait_fs1[i],math_wait_fs2[i],math_wait_fs3[i],math_wait_omega_s1[i],math_wait_omega_s2[i],math_wait_omega_s3[i]);
+    //     fprintf(file_math_wait, " %I64u %.6f %.6f %.6f %.6f %.6f %.6f\n", i, math_wait_fs1[i],math_wait_fs2[i],math_wait_fs3[i],math_wait_omega_s1[i],math_wait_omega_s2[i],math_wait_omega_s3[i]);
     // }
     // fclose(file_math_wait);
     // fprintf(file_math_dispersia, "№ Time Fs1 Fs2 Fs3 Omega_s1 Omega_s2 Omega_s3\n");
@@ -461,14 +454,14 @@ int main() {
     // double *math_dispersia_omega_s3 = (double*)malloc(sizeof(double)*(number_no_zero_odo+1));
     // for (size_t i = 1; i < number_no_zero_odo; i++)
     // {
-    //    // printf("Iteration(math_dispersia) = %zu\n",i);
+    //    // printf("Iteration(math_dispersia) = %I64u\n",i);
     //     math_dispersia_s1[i] = math_dispersia(data.fs1,math_dispersia_s1,math_wait_fs1, i, number_no_zero_odo);
     //     math_dispersia_s2[i] = math_dispersia(data.fs2,math_dispersia_s2,math_wait_fs2, i, number_no_zero_odo);
     //     math_dispersia_s3[i] = math_dispersia(data.fs3,math_dispersia_s3,math_wait_fs3, i, number_no_zero_odo);
     //     math_dispersia_omega_s1[i] = math_dispersia(data.omega_s1,math_dispersia_omega_s1,math_wait_omega_s1,i,number_no_zero_odo);
     //     math_dispersia_omega_s2[i] = math_dispersia(data.omega_s2,math_dispersia_omega_s2,math_wait_omega_s2,i,number_no_zero_odo);
     //     math_dispersia_omega_s3[i] = math_dispersia(data.omega_s3,math_dispersia_omega_s3,math_wait_omega_s3,i,number_no_zero_odo);
-    //     fprintf(file_math_dispersia, "%zu %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n",i,data.time[i],math_dispersia_s1[i],math_dispersia_s2[i],math_dispersia_s3[i],math_dispersia_omega_s1[i],math_dispersia_omega_s2[i],math_dispersia_omega_s3[i]);
+    //     fprintf(file_math_dispersia, "%I64u %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n",i,data.time[i],math_dispersia_s1[i],math_dispersia_s2[i],math_dispersia_s3[i],math_dispersia_omega_s1[i],math_dispersia_omega_s2[i],math_dispersia_omega_s3[i]);
     // }
     fclose(file_math_dispersia);
     
