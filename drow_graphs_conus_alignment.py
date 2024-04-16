@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 
 # Создаем DataFrame с некоторыми данными (замените на свои данные)
 file_path = r'C:\Users\Markelo\Documents\Course paper\ConusAlignment(21.02-28.02)\AlignmentOnly\ConsoleApplication1\x64\Release\Alignment\Alignment.txt'
-df_conus = pd.read_csv(file_path, delimiter='    ')  # Предполагается, что данные разделены табуляциями, уточните это при необходимости
+df_1 = pd.read_csv(file_path, delimiter='    ')  # Предполагается, что данные разделены табуляциями, уточните это при необходимости
+df_conus = df_1[::100]
+file_path1 = r'C:\Users\Markelo\Documents\Course-paper\output_angels_1.txt'
+df_a_1 = pd.read_csv(file_path1, delimiter='    ')
+df_alg_1 = df_a_1[::100]
 
-file_path1 = r'C:\Users\Markelo\Documents\Course paper\outpu_angels_1.txt'
-df_alg_1 = pd.read_csv(file_path1, delimiter='    ')
-
-print(df_alg_1[df_alg_1['Psi'] < 0]['Psi'])
 plt.figure(figsize=(12, 12))
 # Создаем три отдельных графика
 plt.subplot(3, 2, 1)
