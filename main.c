@@ -198,7 +198,7 @@ double * search_angle_psi(double * angles, double *omega_s1_mean,double *omega_s
     //printf("gamma[r] = %.6f, theta[r] = %.6f, gamma[d]=%.6f,theta[d] = %.6f ", angles[1], angles[2], R2D(angles[1]), R2D(angles[2]));
     columns_l3[0] = sin(angles[2]); // sin(radians), cos(radians)
     columns_l3[1] = cos(angles[2])*cos(angles[1]); //
-    columns_l3[2] = -cos(angles[2])*sin(angles[1]); printf("col3[2] = %.6f\n", columns_l3[2]);
+    columns_l3[2] = -cos(angles[2])*sin(angles[1]); //printf("col3[2] = %.6f\n", columns_l3[2]);
 
     //lat_mean = search_mediums_sensors_mean(lat, len);
     lat_mean_rad = D2R(lat_mean[len]); //printf(" lat_mean[d] = %.6f, lat_mean[r] = %.6f\n", lat_mean[len],lat_mean_rad);
@@ -220,11 +220,11 @@ double * search_angle_psi(double * angles, double *omega_s1_mean,double *omega_s
     columns_l1 = vector_product(columns_l2, columns_l3, 3);
     fprintf(file, "%I64u %.6f %.6f %.6f  %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n", len, 
     DH2RS(omega_s1_mean[len]), DH2RS(omega_s2_mean[len]), DH2RS(omega_s3_mean[len]), columns_l3[0], columns_l3[1], columns_l3[2], columns_l2[0], columns_l2[1], columns_l2[2], lat_mean_rad, columns_l1[0], columns_l1[1], columns_l1[2]);
-    angles[0] = atan2((columns_l1[0]),(columns_l1[1]));
+    angles[0] = atan2((columns_l1[0]),(columns_l2[0]));
     //printf("Columns_l1[0] = %.6f, Columns_l1[1]= %.6f\n", columns_l1[0], columns_l1[1]);
     //printf("Calculus psi = %.6f\n", angles[0]);
     fclose(file);
-    printf("cos = %.10f\n", (columns_l1[0]*columns_l3[0]+columns_l1[1]*columns_l3[1]+columns_l1[2]*columns_l3[2])/(norma_vectora(columns_l1)*norma_vectora(columns_l3)));
+    //printf("cos = %.10f\n", (columns_l1[0]*columns_l3[0]+columns_l1[1]*columns_l3[1]+columns_l1[2]*columns_l3[2])/(norma_vectora(columns_l1)*norma_vectora(columns_l3)));
 
     return angles;
 }
