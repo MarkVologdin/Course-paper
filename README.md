@@ -59,8 +59,8 @@
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/ваш-username/ваш-репозиторий.git
-   cd ваш-репозиторий
+   git clone https://github.com/MarkVologdin/Course-paper.git
+   cd Course-paper
    ```
 2. Установите необходимые зависимости:
    ```bash
@@ -68,11 +68,12 @@
    ```
 3. Запустите скрипты для обработки данных:
    ```bash
+   gcc main.c
    python main.py
    ```
-4. Скомпилируйте LaTeX-документ для получения отчета:
+4. Запустите файлы для отрисовки результатов выставки:
    ```bash
-   pdflatex docs/report.tex
+   python drow_*.py
    ```
 5. Используйте `Makefile` для автоматизированной сборки:
    ```bash
