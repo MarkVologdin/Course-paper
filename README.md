@@ -14,6 +14,20 @@
 - **`/data`**: Экспериментальные данные.
 - **`/scripts`**: Скрипты для обработки данных и визуализации.
 - **`/images`**: Графики и изображения, используемые в отчете.
+- **`.vscode`**: Настройки среды разработки VS Code.
+- **`.gitignore`**: Файл исключений Git.
+- **`Makefile`**: Автоматизация сборки и компиляции.
+- **`Alignment_new.txt`**: Файл с данными выравнивания.
+- **`main.c`**: Основной C-файл проекта.
+- **`main.py`**: Основной Python-скрипт проекта.
+- **`drow_*.py`**: Скрипты для отрисовки и анализа данных:
+  - `drow_east.py`
+  - `drow_graphsPy.py`
+  - `drow_graphs_conus_alignment.py`
+  - `drow_graphs_mean.py`
+  - `drow_math_dispersia.py`
+  - `drow_math_wait.py`
+  - `drow_on_one.py`
 
 ## Основные алгоритмы
 
@@ -54,9 +68,15 @@
    ```
 3. Запустите скрипты для обработки данных:
    ```bash
-   python scripts/process_data.py
+   python main.py
    ```
 4. Скомпилируйте LaTeX-документ для получения отчета:
    ```bash
    pdflatex docs/report.tex
+   ```
+5. Используйте `Makefile` для автоматизированной сборки:
+   ```bash
+   make all
+   ```
+
    
